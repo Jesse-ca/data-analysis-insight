@@ -32,6 +32,52 @@ AI根据数据特征自动决定是否执行WFR：
 | G. 对比 | 同维度差异 | max ÷ min |
 | H. 行动建议 | 基于洞察的下一步 | 诊断 + 优先级 |
 
+## 设计意图
+
+### 为什么区分"看板"和"工具"？
+
+| 概念 | 数据来源 | 交互性 | 适用场景 |
+|------|---------|--------|---------|
+| **看板** | 数据已嵌入HTML | 无交互 | 静态报告，打开即看 |
+| **工具** | 用户上传Excel | 实时计算 | 交互式分析工具 |
+
+**设计原因**：
+- 静态报告（看板）可以包含AI深度分析（WFR），因为数据已嵌入
+- 交互式工具（Tool）只能用离线规则，因为无法调用AI
+
+### 为什么Tool模式禁止WFR？
+
+Tool模式生成的是**离线HTML工具**：
+- 用户在浏览器中打开HTML文件
+- 无法联网调用AI
+- 只能使用固定的8类规则驱动的洞察
+
+### 为什么R分析输出5-8条根因？
+
+- 少于5条：可能遗漏重要根因
+- 多于8条：信息过载，用户难以消化
+- 5-8条是最佳平衡点
+
+### 为什么W分析针对KPI而不是异常值？
+
+- W（What-if）是情景模拟，回答"如果...会怎样"
+- 用户关心的是KPI变化，不是异常值
+- 模拟异常值没有业务意义
+
+### 为什么需要字段别名机制？
+
+不同行业的数据字段命名差异很大：
+- 有的叫"销售额"，有的叫"总金额"
+- 有的叫"渠道"，有的叫"属性"
+- 别名机制让skill能适应不同行业的命名习惯
+
+### 为什么多列产品数据要单独处理？
+
+产品数据可能分散在多个列（如HL-L1228、DCP-L1638W）：
+- 每列代表一个产品
+- 需要按列求和得到产品维度的汇总
+- 热力图需要横坐标支持横向滚动
+
 ## 安装
 
 ### 前置条件
@@ -78,27 +124,27 @@ AI：[生成Tool模式的交互式HTML工具]
 
 ```
 data-analysis-insight/
-├── SKILL.md                          # 主文件
-├── LICENSE                           # MIT License
-├── modules/                          # 核心模块
-│   ├── scene-recognizer.md           # 场景识别
-│   ├── metric-inferencer.md          # 指标推断
-│   ├── chart-selector.md             # 图表选型
-│   ├── flow-orchestrator.md          # 流程编排
-│   ├── html-builder.md               # HTML组装
-│   └── data-storytelling.md          # 数据故事结构
-├── scripts/                          # 工具脚本
-│   └── parse_excel.py                # Python pandas Excel解析
-├── configs/                          # 用户配置（可选）
-│   └── README.md
-├── references/                       # 参考文档
-│   ├── README.md
-│   ├── reference-materials.md        # 参考材料
-│   └── case-studies.md               # 成功案例库
-└── docs/                             # 使用文档
-    ├── USAGE.md                      # 使用说明
-    ├── troubleshooting.md            # 故障排除
-    └── success-criteria.md           # 成功标准
+├ SKILL.md                          # 主文件
+├ LICENSE                           # MIT License
+├ modules/                          # 核心模块
+│  ├── scene-recognizer.md           # 场景识别
+│  ├── metric-inferencer.md          # 指标推断
+│  ├── chart-selector.md             # 图表选型
+│  ├── flow-orchestrator.md          # 流程编排
+│  ├── html-builder.md               # HTML组装
+│  └── data-storytelling.md          # 数据故事结构
+├ scripts/                          # 工具脚本
+│  └── parse_excel.py                # Python pandas Excel解析
+├ configs/                          # 用户配置（可选）
+│  └── README.md
+├ references/                       # 参考文档
+│  ├── README.md
+│  ├── reference-materials.md        # 参考材料
+│  └── case-studies.md               # 成功案例库
+└ docs/                             # 使用文档
+   ├── USAGE.md                      # 使用说明
+   ├── troubleshooting.md            # 故障排除
+   └── success-criteria.md           # 成功标准
 ```
 
 ## 技术栈
